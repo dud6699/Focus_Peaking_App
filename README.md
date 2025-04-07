@@ -1,70 +1,22 @@
-# Getting Started with Create React App
+Approach:
+I made a React App with the ShadCN UI component library to display Focus Peaking on the provided video. The majority of the work in done in the src/components/MediaPlayer.js component. It displays a Canvas object over the video, and uses a Sobel Filter to detect high contrast parts of the video and highlight them on the Canvas. I added a simple Play/Pause button and slider under the video because the default controls would be covered by the Canvas. In the case that the app is taking too much processing power, there is an option to Skip Frames to lower the processing load. The other options are to lower/raise the strength of the highlight, change the color, and toggle it On/Off. The run.sh calls the python script startApp.py, which uses a Python http.server to server the app and start it in the Chromium-Browser (if available), or the Default Browser.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Special Notes:
+- I had some issues when testing it on a x86 Linux machine where the CSS styles weren't properly applied on older browsers. I had success running it on a chromium-browser which can be installed with the install.sh script.
+- ./install.sh only installs the chromium-browser. Running it is optional unless the default browser doesn't apply the CSS styles correctly. The rest of the project is already built.
+- When testing ./run.sh, it seemed to take a while to fully shut down the server, so I would receive [Address already in use] if rerunning ./run.sh too quickly.
+- Can't run ./run.sh as root. Will get error [Running as root without --no-sandbox is not supported.]
 
-## Available Scripts
+Usage Instructions:
+1. Copy build.tar to Linux machine
+2. In directory with build.tar, run: tar -xvf build.tar
+3. cd build
+4. (Optional) Install Chromium-browser with sudo privileges: ./install.sh
+5. Run App: ./run.sh
 
-In the project directory, you can run:
+Screenshots:
+Focus Peaking On:
+![Alt text](./screenshots/fp_on.jpg)
 
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Focus Peaking Off:
+![Alt text](./screenshots/fp_off.jpg)

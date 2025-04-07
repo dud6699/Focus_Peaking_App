@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
 import { Checkbox } from "./ui/checkbox"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,} from "./ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue,} from "./ui/select"
 import { Play, Pause } from "lucide-react"
 
 function MediaPlayer() {
@@ -15,7 +15,20 @@ function MediaPlayer() {
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const sliderRef = useRef(null);
+
+
+  // Sobel Kernels
+  const sobelX = [
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]
+  ];
+
+  const sobelY = [
+    [-1, -2, -1],
+    [0,  0,  0],
+    [1,  2,  1]
+  ];
 
   var video = null;
   var canvas = null;
@@ -25,6 +38,8 @@ function MediaPlayer() {
   var green = useRef(0);
   var blue = useRef(0);
   var threshold = useRef(200);
+  var frameSkip = useRef(1);
+  var frame = 0;
 
   // Set variables and start rendering
   useEffect(() => {
@@ -47,6 +62,7 @@ function MediaPlayer() {
 
   // Sync Slider position with Video Time
   function syncVideo(value){
+    //setSliderValue(value);
     videoRef.current.currentTime = value[0]/100 * videoRef.current.duration;
   }
 
@@ -59,6 +75,21 @@ function MediaPlayer() {
       seconds = "0" + seconds;
     }
     return minutes + ":" + seconds;
+  }
+
+  function changeFrame(value){
+    if (value === "0"){
+      frameSkip.current = 1;
+    }
+    else if (value === "1"){
+      frameSkip.current = 2;
+    }
+    else if (value === "2"){
+      frameSkip.current = 3;
+    }
+    else {
+      frameSkip.current = 4;
+    }
   }
 
   // Set Focus Peaking Strength
@@ -109,20 +140,6 @@ function MediaPlayer() {
     const data = imageData.data;
     const width = imageData.width;
     const height = imageData.height;
-
-    // Sobel Kernels
-    const sobelX = [
-      [-1, 0, 1],
-      [-2, 0, 2],
-      [-1, 0, 1]
-    ];
-
-    const sobelY = [
-      [-1, -2, -1],
-      [0,  0,  0],
-      [1,  2,  1]
-    ];
-
 
     const output = new Uint8ClampedArray(data.length);
 
@@ -179,19 +196,25 @@ function MediaPlayer() {
         setTimestamp(decToTime(videoRef.current.currentTime) + totalDuration);
       }
 
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // Get the image data from the Canvas
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    
-      // Apply Sobel Filter
-      const sobelImage = sobelFilter(imageData);
-      
       // Sync Slider with Video Time
       setSliderValue([videoRef.current.currentTime/videoRef.current.duration * 100]);
 
-      // Draw processed image to Canvas
-      ctx.putImageData(sobelImage, 0, 0);
+      if (frame % frameSkip.current === 0) {
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Get the image data from the Canvas
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+        // Apply Sobel Filter
+        const sobelImage = sobelFilter(imageData);
+
+        // Draw processed image to Canvas
+        ctx.putImageData(sobelImage, 0, 0);
+
+      }
+
+      frame++;
     
       // Continue drawing each frame
       requestAnimationFrame(applyFocusPeak);
@@ -201,6 +224,22 @@ function MediaPlayer() {
   return (
     <div>
       <div className="menu-options">
+        <div className="menu-group text-sm font-medium">
+          Skip Frames: 
+          <Select defaultValue={"0"} onValueChange={changeFrame}>
+            <SelectTrigger className="dropdown-sm">
+              <SelectValue placeholder="Skip Frames" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="0">0</SelectItem>
+                <SelectItem value="1">1</SelectItem>
+                <SelectItem value="2">2</SelectItem>
+                <SelectItem value="3">3</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="menu-group text-sm font-medium">
           Strength: 
           <Select defaultValue={"normal"} onValueChange={changeStrength}>
@@ -234,12 +273,12 @@ function MediaPlayer() {
         <div className="menu-group text-sm font-medium">
           <Checkbox id="toggleFocus" checked={focusOn} onCheckedChange={toggleFocus}/>
           <label htmlFor="toggleFocus">
-            Toggle Focus Peaking
+            Show Focus Peaking
           </label>
         </div>
       </div>
       <div className="video-container">
-        <video ref={videoRef} onPlay={applyFocusPeak}>
+        <video ref={videoRef} preload="auto" loop onPlay={applyFocusPeak}>
           <source src="/videos/exploreHD-Focus.mp4" type="video/mp4" />
         </video>
         <canvas ref={canvasRef} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none"}} />
@@ -251,7 +290,7 @@ function MediaPlayer() {
             <Play fill="white"/>
           )}
         </Button>
-        <Slider className="videoSlider" ref={sliderRef} value={sliderValue} max={100} step={1} onValueChange={syncVideo}/>
+        <Slider className="videoSlider" value={sliderValue} max={100} step={1} onValueChange={syncVideo}/>
         <div className="text-sm font-medium">{timestamp}</div>
       </div>
     </div>
